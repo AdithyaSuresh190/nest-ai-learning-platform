@@ -12,14 +12,23 @@ const roles: { value: UserRole; label: string; icon: typeof GraduationCap; color
   { value: 'therapist', label: 'Therapist', icon: Stethoscope, color: 'nest-green', emoji: '👩‍⚕️' },
 ];
 
+const demoAccounts: Record<UserRole, { email: string; name: string }> = {
+  student: { email: 'maya@nest.edu', name: 'Maya' },
+  teacher: { email: 'sarah@nest.edu', name: 'Ms. Sarah' },
+  parent: { email: 'john@nest.edu', name: 'John' },
+  therapist: { email: 'emily@nest.edu', name: 'Dr. Emily' },
+};
+
+const DEMO_PASSWORD = 'nestdemo123';
+
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole>('student');
+  const [loadingRole, setLoadingRole] = useState<UserRole | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +40,8 @@ export function LoginPage() {
     setLoading(true);
     const result = await login(email, password);
     setLoading(false);
-    if (result.success) {
-      navigate(`/${selectedRole}`);
+    if (result.success && result.user) {
+      navigate(`/${result.user.role}`);
     } else {
       setError(result.error || 'Could not log in. Please check your credentials.');
     }
@@ -40,20 +49,22 @@ export function LoginPage() {
 
   const quickLogin = async (role: UserRole) => {
     setError('');
-    setLoading(true);
-    // Try demo accounts; if they don't exist, show a hint to register
-    const demoEmails: Record<UserRole, string> = {
-      student: 'maya@nest.edu',
-      teacher: 'sarah@nest.edu',
-      parent: 'john@nest.edu',
-      therapist: 'emily@nest.edu',
-    };
-    const result = await login(demoEmails[role], 'nestdemo123');
-    setLoading(false);
-    if (result.success) {
-      navigate(`/${role}`);
+    setLoadingRole(role);
+    const demo = demoAccounts[role];
+
+    // Try to sign in first
+    let result = await login(demo.email, DEMO_PASSWORD);
+
+    // If login fails (account doesn't exist), auto-create it
+    if (!result.success) {
+      result = await register(demo.name, demo.email, DEMO_PASSWORD, role);
+    }
+
+    setLoadingRole(null);
+    if (result.success && result.user) {
+      navigate(`/${result.user.role}`);
     } else {
-      setError(`Demo account not found. Please create an account first (e.g. sign up as ${demoEmails[role]} with password nestdemo123).`);
+      setError(`Could not set up demo account: ${result.error}`);
     }
   };
 
@@ -77,31 +88,7 @@ export function LoginPage() {
 
         <div className="bg-white rounded-3xl shadow-card p-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back!</h2>
-          <p className="text-gray-400 mb-6">Choose your role and sign in</p>
-
-          {/* Role selection */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {roles.map((role) => {
-              const Icon = role.icon;
-              const active = selectedRole === role.value;
-              return (
-                <button
-                  key={role.value}
-                  onClick={() => setSelectedRole(role.value)}
-                  className={`flex flex-col items-center gap-1 py-4 rounded-2xl border-2 transition-all ${
-                    active
-                      ? `border-${role.color}-400 bg-${role.color}-50 shadow-soft`
-                      : 'border-gray-100 hover:border-gray-200'
-                  }`}
-                >
-                  <span className="text-3xl">{role.emoji}</span>
-                  <span className={`font-semibold text-sm ${active ? `text-${role.color}-700` : 'text-gray-500'}`}>
-                    {role.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <p className="text-gray-400 mb-6">Sign in to your account</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -112,7 +99,7 @@ export function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={`${selectedRole}@nest.edu`}
+                  placeholder="your@email.com"
                   className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-nest-blue-400 outline-none font-medium text-gray-700"
                 />
               </div>
@@ -125,7 +112,7 @@ export function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter any password"
+                  placeholder="Your password"
                   className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-nest-blue-400 outline-none font-medium text-gray-700"
                 />
               </div>
@@ -139,22 +126,24 @@ export function LoginPage() {
           </form>
 
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <p className="text-center text-sm text-gray-400 mb-3">Quick demo login (sign up first with these emails):</p>
-            <div className="flex flex-wrap gap-2 justify-center">
+            <p className="text-center text-sm text-gray-400 mb-3">Try a demo account (auto-creates on first use):</p>
+            <div className="grid grid-cols-2 gap-2">
               {roles.map((role) => (
                 <button
                   key={role.value}
                   onClick={() => quickLogin(role.value)}
-                  disabled={loading}
-                  className="px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-600 transition-all disabled:opacity-50"
+                  disabled={loading || loadingRole !== null}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-600 transition-all disabled:opacity-50 justify-center"
                 >
-                  {role.emoji} {role.label}
+                  {loadingRole === role.value ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <span className="text-lg">{role.emoji}</span>
+                  )}
+                  {role.label}
                 </button>
               ))}
             </div>
-            <p className="text-center text-xs text-gray-300 mt-2">
-              Tip: Register with maya@nest.edu / nestdemo123 to use the demo student.
-            </p>
           </div>
 
           <p className="text-center mt-6 text-sm text-gray-400">

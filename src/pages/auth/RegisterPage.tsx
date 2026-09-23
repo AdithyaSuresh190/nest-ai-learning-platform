@@ -40,8 +40,8 @@ export function RegisterPage() {
     setLoading(true);
     const result = await register(name, email, password, selectedRole);
     setLoading(false);
-    if (result.success) {
-      navigate(`/${selectedRole}`);
+    if (result.success && result.user) {
+      navigate(`/${result.user.role}`);
     } else {
       setError(result.error || 'Could not create account. Please try again.');
     }
