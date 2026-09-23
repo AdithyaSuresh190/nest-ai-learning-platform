@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Card';
-import { GraduationCap, BookOpen, Heart, Stethoscope, User, Mail, Lock, Sparkles } from 'lucide-react';
+import { GraduationCap, BookOpen, Heart, Stethoscope, User, Mail, Lock, Sparkles, Loader2 } from 'lucide-react';
 import type { UserRole } from '@/types';
 
 const roles: { value: UserRole; label: string; emoji: string; description: string; color: string }[] = [
@@ -20,19 +20,30 @@ export function RegisterPage() {
   const [password, setPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!name.trim()) {
       setError('Please enter your name');
       return;
     }
-    const success = register(name, email || `${name.split(' ')[0].toLowerCase()}@nest.edu`, password || 'demo', selectedRole);
-    if (success) {
+    if (!email.trim()) {
+      setError('Please enter your email');
+      return;
+    }
+    if (!password.trim() || password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    setLoading(true);
+    const result = await register(name, email, password, selectedRole);
+    setLoading(false);
+    if (result.success) {
       navigate(`/${selectedRole}`);
     } else {
-      setError('Could not create account. Please try again.');
+      setError(result.error || 'Could not create account. Please try again.');
     }
   };
 
@@ -118,8 +129,8 @@ export function RegisterPage() {
 
             {error && <p className="text-sm text-nest-peach-600 font-medium">{error}</p>}
 
-            <Button type="submit" size="lg" className="w-full" icon={<Sparkles className="w-5 h-5" />}>
-              Create Account
+            <Button type="submit" size="lg" className="w-full" disabled={loading} icon={loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}>
+              {loading ? 'Creating account...' : 'Create Account'}
             </Button>
           </form>
 

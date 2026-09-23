@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Card';
-import { GraduationCap, BookOpen, Heart, Stethoscope, Mail, Lock, Sparkles } from 'lucide-react';
+import { GraduationCap, BookOpen, Heart, Stethoscope, Mail, Lock, Sparkles, Loader2 } from 'lucide-react';
 import type { UserRole } from '@/types';
+import { supabase } from '@/services/supabaseClient';
 
 const roles: { value: UserRole; label: string; icon: typeof GraduationCap; color: string; emoji: string }[] = [
   { value: 'student', label: 'Student', icon: GraduationCap, color: 'nest-blue', emoji: '🧒' },
@@ -18,28 +19,43 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const success = login(email || `${selectedRole}@nest.edu`, password || 'demo');
-    if (success) {
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter your email and password.');
+      return;
+    }
+    setLoading(true);
+    const result = await login(email, password);
+    setLoading(false);
+    if (result.success) {
       navigate(`/${selectedRole}`);
     } else {
-      setError('Could not log in. Try the demo accounts below!');
+      setError(result.error || 'Could not log in. Please check your credentials.');
     }
   };
 
-  const quickLogin = (role: UserRole) => {
-    const emails: Record<UserRole, string> = {
+  const quickLogin = async (role: UserRole) => {
+    setError('');
+    setLoading(true);
+    // Try demo accounts; if they don't exist, show a hint to register
+    const demoEmails: Record<UserRole, string> = {
       student: 'maya@nest.edu',
       teacher: 'sarah@nest.edu',
       parent: 'john@nest.edu',
       therapist: 'emily@nest.edu',
     };
-    login(emails[role], 'demo');
-    navigate(`/${role}`);
+    const result = await login(demoEmails[role], 'nestdemo123');
+    setLoading(false);
+    if (result.success) {
+      navigate(`/${role}`);
+    } else {
+      setError(`Demo account not found. Please create an account first (e.g. sign up as ${demoEmails[role]} with password nestdemo123).`);
+    }
   };
 
   return (
@@ -118,24 +134,28 @@ export function LoginPage() {
 
             {error && <p className="text-sm text-nest-peach-600 font-medium">{error}</p>}
 
-            <Button type="submit" size="lg" className="w-full" icon={<Sparkles className="w-5 h-5" />}>
-              Sign In
+            <Button type="submit" size="lg" className="w-full" disabled={loading} icon={loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}>
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
 
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <p className="text-center text-sm text-gray-400 mb-3">Quick demo login:</p>
+            <p className="text-center text-sm text-gray-400 mb-3">Quick demo login (sign up first with these emails):</p>
             <div className="flex flex-wrap gap-2 justify-center">
               {roles.map((role) => (
                 <button
                   key={role.value}
                   onClick={() => quickLogin(role.value)}
-                  className="px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-600 transition-all"
+                  disabled={loading}
+                  className="px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-600 transition-all disabled:opacity-50"
                 >
                   {role.emoji} {role.label}
                 </button>
               ))}
             </div>
+            <p className="text-center text-xs text-gray-300 mt-2">
+              Tip: Register with maya@nest.edu / nestdemo123 to use the demo student.
+            </p>
           </div>
 
           <p className="text-center mt-6 text-sm text-gray-400">

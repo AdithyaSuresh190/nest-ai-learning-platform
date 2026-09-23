@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AccessibilityPanel } from '@/components/ui/AccessibilityPanel';
+import { ChatModule } from '@/components/chat/ChatModule';
 
 interface NavItem {
   label: string;
@@ -180,6 +181,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       </div>
 
       <AccessibilityPanel open={accessibilityOpen} onClose={() => setAccessibilityOpen(false)} />
+      <ChatModule />
     </div>
   );
 }
