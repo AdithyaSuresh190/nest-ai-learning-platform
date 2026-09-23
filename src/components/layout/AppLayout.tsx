@@ -161,7 +161,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <span className="text-2xl">{user.avatar}</span>
               <div>
                 <p className="font-bold text-gray-700 text-sm lg:text-base">Hi, {user.name}!</p>
-                <p className="text-xs text-gray-400">{user.gradeLevel || (user.role.charAt(0).toUpperCase() + user.role.slice(1))}</p>
               </div>
             </div>
           </div>
