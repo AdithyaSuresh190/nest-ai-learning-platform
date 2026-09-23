@@ -4,7 +4,6 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Card';
 import { GraduationCap, BookOpen, Heart, Stethoscope, Mail, Lock, Sparkles, Loader2 } from 'lucide-react';
 import type { UserRole } from '@/types';
-import { supabase } from '@/services/supabaseClient';
 
 const roles: { value: UserRole; label: string; icon: typeof GraduationCap; color: string; emoji: string }[] = [
   { value: 'student', label: 'Student', icon: GraduationCap, color: 'nest-blue', emoji: '🧒' },
