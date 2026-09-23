@@ -6,6 +6,11 @@ export interface User {
   email: string;
   role: UserRole;
   avatar: string;
+  avatarUrl?: string;
+  bio?: string;
+  dateOfBirth?: string;
+  phone?: string;
+  address?: string;
   // For parent/therapist: linked student IDs
   linkedStudents?: string[];
   // For student: grade level

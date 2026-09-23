@@ -35,6 +35,9 @@ import { TherapistPatterns } from '@/pages/therapist/TherapistPatterns';
 import { TherapistActivities } from '@/pages/therapist/TherapistActivities';
 import { TherapistReports } from '@/pages/therapist/TherapistReports';
 
+// Shared pages
+import { ProfilePage } from '@/pages/Profile';
+
 import type { UserRole } from '@/types';
 
 function ProtectedRoute({ children, role }: { children: React.ReactNode; role?: UserRole }) {
@@ -92,6 +95,9 @@ function AppRoutes() {
       <Route path="/therapist/patterns" element={<RoleLayout role="therapist"><TherapistPatterns /></RoleLayout>} />
       <Route path="/therapist/activities" element={<RoleLayout role="therapist"><TherapistActivities /></RoleLayout>} />
       <Route path="/therapist/reports" element={<RoleLayout role="therapist"><TherapistReports /></RoleLayout>} />
+
+      {/* Profile (shared across all roles) */}
+      <Route path="/profile" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
 
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/login" replace />} />

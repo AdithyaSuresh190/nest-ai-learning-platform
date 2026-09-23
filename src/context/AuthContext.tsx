@@ -9,6 +9,8 @@ interface AuthContextValue {
   register: (name: string, email: string, password: string, role: UserRole) => Promise<{ success: boolean; error?: string; user?: User | null }>;
   logout: () => void;
   isLoading: boolean;
+  updateProfile: (updates: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -62,6 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: authUser.email || '',
         role: profile.role as UserRole,
         avatar: (profile.avatar as string) || roleAvatars[profile.role as UserRole] || '🧒',
+        avatarUrl: (profile.avatar_url as string) || undefined,
+        bio: (profile.bio as string) || undefined,
+        dateOfBirth: (profile.date_of_birth as string) || undefined,
+        phone: (profile.phone as string) || undefined,
+        address: (profile.address as string) || undefined,
         gradeLevel: (profile.grade_level as string) || undefined,
         linkedStudents: (profile.linked_students as string[]) || undefined,
       };
@@ -177,13 +184,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: true, user: u };
   };
 
+  const refreshUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    await fetchProfile(session);
+  };
+
+  const updateProfile = async (updates: Partial<User>): Promise<{ success: boolean; error?: string }> => {
+    if (!user) return { success: false, error: 'Not signed in' };
+
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.avatar !== undefined) dbUpdates.avatar = updates.avatar;
+    if (updates.avatarUrl !== undefined) dbUpdates.avatar_url = updates.avatarUrl;
+    if (updates.bio !== undefined) dbUpdates.bio = updates.bio;
+    if (updates.dateOfBirth !== undefined) dbUpdates.date_of_birth = updates.dateOfBirth || null;
+    if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+    if (updates.address !== undefined) dbUpdates.address = updates.address;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(dbUpdates)
+      .eq('id', user.id);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    setUser({ ...user, ...updates });
+    return { success: true };
+  };
+
   const logout = () => {
     supabase.auth.signOut();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isLoading, updateProfile, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
