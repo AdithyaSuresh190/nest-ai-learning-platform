@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, BookOpen, BarChart3, Lightbulb, Mic, Settings,
   Upload, Users, FileText, LogOut, Menu, X, Accessibility,
-  GraduationCap, Heart, Stethoscope, ChevronRight, UserCircle,
+  GraduationCap, Heart, Stethoscope, ChevronRight, UserCircle, Leaf,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AccessibilityPanel } from '@/components/ui/AccessibilityPanel';
@@ -132,6 +132,17 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
         {/* Bottom actions */}
         <div className="px-4 py-4 border-t border-gray-100 space-y-1">
+          <button
+            onClick={() => { navigate('/calmspace'); setSidebarOpen(false); }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
+              location.pathname === '/calmspace'
+                ? 'bg-nest-green-100 text-nest-green-700 shadow-soft'
+                : 'text-gray-500 hover:bg-nest-green-50 hover:text-nest-green-600'
+            }`}
+          >
+            <Leaf className="w-5 h-5" />
+            <span>CalmSpace</span>
+          </button>
           <button
             onClick={() => { navigate('/profile'); setSidebarOpen(false); }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${

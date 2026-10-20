@@ -37,6 +37,7 @@ import { TherapistReports } from '@/pages/therapist/TherapistReports';
 
 // Shared pages
 import { ProfilePage } from '@/pages/Profile';
+import { CalmSpace } from '@/pages/calm/CalmSpace';
 
 import type { UserRole } from '@/types';
 
@@ -98,6 +99,9 @@ function AppRoutes() {
 
       {/* Profile (shared across all roles) */}
       <Route path="/profile" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
+
+      {/* CalmSpace (shared across all roles) */}
+      <Route path="/calmspace" element={<ProtectedRoute><AppLayout><CalmSpace /></AppLayout></ProtectedRoute>} />
 
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/login" replace />} />

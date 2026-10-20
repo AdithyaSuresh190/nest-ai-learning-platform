@@ -129,3 +129,57 @@ body .word-spacing-wide {
 .bg-mesh-warm {
   background: linear-gradient(135deg, #f0f7ff 0%, #fff9d6 25%, #f1fcf3 50%, #f8f6ff 75%, #fff7f0 100%);
 }
+
+/* CalmSpace themes */
+.calm-theme-meadow {
+  --calm-bg: linear-gradient(135deg, #f1fcf3 0%, #e0f8e6 50%, #f0f7ff 100%);
+  --calm-card: #ffffff;
+  --calm-primary: #65cd7c;
+  --calm-primary-light: #e0f8e6;
+  --calm-accent: #36a9f6;
+  --calm-text: #214d2e;
+  --calm-text-muted: #5b8a68;
+}
+.calm-theme-ocean {
+  --calm-bg: linear-gradient(135deg, #f0f7ff 0%, #e0effe 50%, #f8f6ff 100%);
+  --calm-card: #ffffff;
+  --calm-primary: #36a9f6;
+  --calm-primary-light: #e0effe;
+  --calm-accent: #b48eff;
+  --calm-text: #064c83;
+  --calm-text-muted: #6b9bc4;
+}
+.calm-theme-sunset {
+  --calm-bg: linear-gradient(135deg, #fff7f0 0%, #ffeede 50%, #fff9d6 100%);
+  --calm-card: #ffffff;
+  --calm-primary: #fc9358;
+  --calm-primary-light: #ffeede;
+  --calm-accent: #ffd93b;
+  --calm-text: #9a3c1d;
+  --calm-text-muted: #c08a72;
+}
+.calm-theme-twilight {
+  --calm-bg: linear-gradient(135deg, #f8f6ff 0%, #f0ebff 50%, #f0f7ff 100%);
+  --calm-card: #ffffff;
+  --calm-primary: #b48eff;
+  --calm-primary-light: #f0ebff;
+  --calm-accent: #65cd7c;
+  --calm-text: #5a2bb8;
+  --calm-text-muted: #9080c4;
+}
+
+/* Quiet mode overlay — dims everything except CalmSpace content */
+.calm-quiet-mode .bg-mesh-warm,
+.calm-quiet-mode aside,
+.calm-quiet-mode header {
+  filter: saturate(0.3) brightness(0.85);
+}
+.calm-quiet-mode aside nav button:not(.calm-active),
+.calm-quiet-mode aside .border-t button {
+  opacity: 0.3;
+}
+
+/* Breathing circle */
+.breathing-circle {
+  transition: transform 4s ease-in-out, opacity 4s ease-in-out;
+}
