@@ -235,7 +235,7 @@ export function CalmSpace() {
         quiet_mode: prefs.quietMode,
         sound_enabled: prefs.soundEnabled,
         updated_at: new Date().toISOString(),
-      })
+      }, { onConflict: 'user_id' })
       .then(({ error }) => {
         if (error) console.error('Failed to save calm prefs:', error.message);
       });

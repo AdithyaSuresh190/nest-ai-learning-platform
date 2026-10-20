@@ -24,7 +24,6 @@ export function DrawingCanvas({ brushColor }: DrawingCanvasProps) {
   const [brushSize, setBrushSize] = useState(6);
   const [currentColor, setCurrentColor] = useState(brushColor);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
-  const [redoStack, setRedoStack] = useState<Stroke[]>([]);
 
   const currentStrokeRef = useRef<Stroke | null>(null);
 
@@ -103,7 +102,6 @@ export function DrawingCanvas({ brushColor }: DrawingCanvasProps) {
     const stroke: Stroke = { color: currentColor, size: brushSize, points: [pos] };
     currentStrokeRef.current = stroke;
     setIsDrawing(true);
-    setRedoStack([]);
   };
 
   const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -139,7 +137,6 @@ export function DrawingCanvas({ brushColor }: DrawingCanvasProps) {
     setStrokes((prev) => {
       if (prev.length === 0) return prev;
       const last = prev[prev.length - 1];
-      setRedoStack((r) => [...r, last]);
       const remaining = prev.slice(0, -1);
       redrawAll(remaining);
       return remaining;
@@ -148,7 +145,6 @@ export function DrawingCanvas({ brushColor }: DrawingCanvasProps) {
 
   const clear = () => {
     setStrokes([]);
-    setRedoStack([]);
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');

@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Wait a moment for the session to be fully established after signUp
     // (Supabase can return a session before the auth record is fully committed)
     let profile: Record<string, unknown> | null = null;
-    let profileError: unknown = null;
+    let profileError: { message?: string } | null = null;
     for (let attempt = 0; attempt < 3; attempt++) {
       const result = await supabase
         .from('profiles')
@@ -55,6 +55,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setIsLoading(false);
       return null;
+    }
+
+    if (!profile) {
+      const fallbackName = authUser.email?.split('@')[0] || 'Student';
+      const { error: createProfileError } = await supabase.from('profiles').insert({
+        id: authUser.id,
+        name: fallbackName,
+        role: 'student',
+        avatar: roleAvatars.student,
+        grade_level: 'Grade 3',
+      });
+
+      if (!createProfileError) {
+        profile = {
+          id: authUser.id,
+          name: fallbackName,
+          role: 'student',
+          avatar: roleAvatars.student,
+          grade_level: 'Grade 3',
+        };
+      }
     }
 
     if (profile) {
@@ -117,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const u = await fetchProfile(data.session);
     if (!u) {
-      return { success: false, error: 'Could not load your profile. Please try again.' };
+      return { success: false, error: 'Your account signed in, but its profile could not be loaded. Please try again.' };
     }
     return { success: true, user: u };
   };
