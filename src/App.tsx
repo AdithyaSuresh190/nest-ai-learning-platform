@@ -38,6 +38,8 @@ import { TherapistReports } from '@/pages/therapist/TherapistReports';
 // Shared pages
 import { ProfilePage } from '@/pages/Profile';
 import { CalmSpace } from '@/pages/calm/CalmSpace';
+import { DailyRoutine } from '@/pages/student/DailyRoutine';
+import { SleepCompanion } from '@/pages/calm/SleepCompanion';
 
 import type { UserRole } from '@/types';
 
@@ -78,6 +80,8 @@ function AppRoutes() {
       <Route path="/student/explain" element={<RoleLayout role="student"><ExplainItMyWay /></RoleLayout>} />
       <Route path="/student/teach-back" element={<RoleLayout role="student"><TeachBack /></RoleLayout>} />
       <Route path="/student/progress" element={<RoleLayout role="student"><StudentProgress /></RoleLayout>} />
+      <Route path="/routine" element={<ProtectedRoute><AppLayout><DailyRoutine /></AppLayout></ProtectedRoute>} />
+      <Route path="/sleep" element={<ProtectedRoute><AppLayout><SleepCompanion /></AppLayout></ProtectedRoute>} />
 
       {/* Teacher */}
       <Route path="/teacher" element={<RoleLayout role="teacher"><TeacherDashboard /></RoleLayout>} />

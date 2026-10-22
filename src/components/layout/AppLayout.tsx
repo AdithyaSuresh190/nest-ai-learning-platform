@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Home, BookOpen, BarChart3, Lightbulb, Mic, Settings,
+  Home, BookOpen, BarChart3, Lightbulb, Mic, Clock3, Moon,
   Upload, Users, FileText, LogOut, Menu, X, Accessibility,
   GraduationCap, Heart, Stethoscope, ChevronRight, UserCircle, Leaf,
 } from 'lucide-react';
@@ -132,6 +132,28 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
         {/* Bottom actions */}
         <div className="px-4 py-4 border-t border-gray-100 space-y-1">
+          <button
+            onClick={() => { navigate('/routine'); setSidebarOpen(false); }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
+              location.pathname === '/routine'
+                ? 'bg-nest-blue-100 text-nest-blue-700 shadow-soft'
+                : 'text-gray-500 hover:bg-nest-blue-50 hover:text-nest-blue-600'
+            }`}
+          >
+            <Clock3 className="w-5 h-5" />
+            <span>My Daily Routine</span>
+          </button>
+          <button
+            onClick={() => { navigate('/sleep'); setSidebarOpen(false); }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
+              location.pathname === '/sleep'
+                ? 'bg-nest-lavender-100 text-nest-lavender-700 shadow-soft'
+                : 'text-gray-500 hover:bg-nest-lavender-50 hover:text-nest-lavender-600'
+            }`}
+          >
+            <Moon className="w-5 h-5" />
+            <span>Sleep Companion</span>
+          </button>
           <button
             onClick={() => { navigate('/calmspace'); setSidebarOpen(false); }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
