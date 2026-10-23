@@ -71,17 +71,24 @@ export function ProfilePage() {
     setError('');
     setUploadingAvatar(true);
 
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) {
+      setUploadingAvatar(false);
+      setError('Your sign-in session has expired. Please sign in again before uploading a photo.');
+      return;
+    }
+
+    const authUserId = authData.user.id;
     const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`;
-    const filePath = fileName;
+    const filePath = `${authUserId}/avatar-${Date.now()}.${fileExt}`;
 
     // Delete old avatars in the user's folder first (best effort)
     try {
       const { data: oldFiles } = await supabase.storage
         .from('avatars')
-        .list(user.id);
+        .list(authUserId);
       if (oldFiles && oldFiles.length > 0) {
-        const pathsToRemove = oldFiles.map((f) => `${user.id}/${f.name}`);
+        const pathsToRemove = oldFiles.map((f) => `${authUserId}/${f.name}`);
         await supabase.storage.from('avatars').remove(pathsToRemove);
       }
     } catch {
@@ -94,7 +101,7 @@ export function ProfilePage() {
 
     if (uploadError) {
       setUploadingAvatar(false);
-      setError('Could not upload your photo. Please try again.');
+      setError(`Could not upload your photo: ${uploadError.message}`);
       return;
     }
 
