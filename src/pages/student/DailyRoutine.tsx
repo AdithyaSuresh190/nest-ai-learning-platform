@@ -70,7 +70,10 @@ export function DailyRoutine() {
     let mounted = true;
     supabase.from('routine_activities').select('id, title, start_time, duration_minutes, icon, is_break, reminder_enabled').eq('user_id', user.id).order('start_time').then(({ data, error }) => {
       if (!mounted) return;
-      if (error) setNotice('Your routine could not be loaded yet.');
+      if (error) {
+        console.error('Routine load failed:', error.message);
+        setNotice(`Your routine could not be loaded: ${error.message}`);
+      }
       setActivities((data || []) as RoutineActivity[]);
       setLoading(false);
     });
@@ -114,7 +117,11 @@ export function DailyRoutine() {
       ? await supabase.from('routine_activities').update(payload).eq('id', editingId).eq('user_id', user.id).select('id, title, start_time, duration_minutes, icon, is_break, reminder_enabled').maybeSingle()
       : await supabase.from('routine_activities').insert({ ...payload, user_id: user.id }).select('id, title, start_time, duration_minutes, icon, is_break, reminder_enabled').maybeSingle();
     const savedActivity = result.data as RoutineActivity | null;
-    if (result.error || !savedActivity) setNotice('We could not save that activity. Please try again.');
+    if (result.error || !savedActivity) {
+      const message = result.error?.message || 'The saved activity was not returned.';
+      console.error('Routine save failed:', message);
+      setNotice(`We could not save that activity: ${message}`);
+    }
     else {
       setActivities((previous) => [...previous.filter((item) => item.id !== savedActivity.id), savedActivity].sort((a, b) => a.start_time.localeCompare(b.start_time)));
       setModalOpen(false);
@@ -125,7 +132,10 @@ export function DailyRoutine() {
   const deleteActivity = async (id: string) => {
     if (!user) return;
     const { error } = await supabase.from('routine_activities').delete().eq('id', id).eq('user_id', user.id);
-    if (error) setNotice('That activity could not be removed.');
+    if (error) {
+      console.error('Routine delete failed:', error.message);
+      setNotice(`That activity could not be removed: ${error.message}`);
+    }
     else setActivities((previous) => previous.filter((item) => item.id !== id));
   };
 

@@ -82,6 +82,8 @@ function AppRoutes() {
       <Route path="/student/progress" element={<RoleLayout role="student"><StudentProgress /></RoleLayout>} />
       <Route path="/routine" element={<ProtectedRoute><AppLayout><DailyRoutine /></AppLayout></ProtectedRoute>} />
       <Route path="/sleep" element={<ProtectedRoute><AppLayout><SleepCompanion /></AppLayout></ProtectedRoute>} />
+      <Route path="/student/sleep-companion" element={<ProtectedRoute><AppLayout><SleepCompanion /></AppLayout></ProtectedRoute>} />
+      <Route path="/student/routine" element={<ProtectedRoute><AppLayout><DailyRoutine /></AppLayout></ProtectedRoute>} />
 
       {/* Teacher */}
       <Route path="/teacher" element={<RoleLayout role="teacher"><TeacherDashboard /></RoleLayout>} />

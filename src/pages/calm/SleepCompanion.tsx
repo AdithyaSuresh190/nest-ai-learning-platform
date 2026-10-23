@@ -43,6 +43,11 @@ export function SleepCompanion() {
       supabase.from('sleep_routine_steps').select('id, title, position, enabled').eq('user_id', user.id).order('position'),
     ]).then(([settingsResult, stepsResult]) => {
       if (!mounted) return;
+      if (settingsResult.error || stepsResult.error) {
+        const message = settingsResult.error?.message || stepsResult.error?.message || 'The sleep settings could not be loaded.';
+        console.error('Sleep companion load failed:', message);
+        setNotice(`Your sleep companion could not load: ${message}`);
+      }
       if (settingsResult.data) setSettings(settingsResult.data as SleepSettings);
       if (stepsResult.data && stepsResult.data.length > 0) setSteps(stepsResult.data as RoutineStep[]);
       setLoading(false);
@@ -55,7 +60,12 @@ export function SleepCompanion() {
   useEffect(() => {
     if (!user || loading) return;
     const timer = window.setTimeout(() => {
-      supabase.from('sleep_companion_settings').upsert({ user_id: user.id, ...settings, updated_at: new Date().toISOString() }, { onConflict: 'user_id' }).then(({ error }) => { if (error) setNotice('Your sleep settings could not be saved yet.'); });
+      supabase.from('sleep_companion_settings').upsert({ user_id: user.id, ...settings, updated_at: new Date().toISOString() }, { onConflict: 'user_id' }).then(({ error }) => {
+        if (error) {
+          console.error('Sleep settings save failed:', error.message);
+          setNotice(`Your sleep settings could not be saved: ${error.message}`);
+        }
+      });
     }, 350);
     return () => window.clearTimeout(timer);
   }, [settings, user, loading]);
@@ -88,10 +98,23 @@ export function SleepCompanion() {
   const addStep = async () => {
     if (!user || !newStep.trim()) return;
     const { data, error } = await supabase.from('sleep_routine_steps').insert({ user_id: user.id, title: newStep.trim(), position: steps.length }).select('id, title, position, enabled').maybeSingle();
-    if (error || !data) setNotice('That bedtime step could not be added.'); else { setSteps([...steps, data as RoutineStep]); setNewStep(''); }
+    if (error || !data) {
+      const message = error?.message || 'The saved step was not returned.';
+      console.error('Sleep step add failed:', message);
+      setNotice(`That bedtime step could not be added: ${message}`);
+    } else { setSteps([...steps, data as RoutineStep]); setNewStep(''); }
   };
-  const toggleStep = async (step: RoutineStep) => { const enabled = !step.enabled; await supabase.from('sleep_routine_steps').update({ enabled }).eq('id', step.id).eq('user_id', user?.id); setSteps(steps.map((item) => item.id === step.id ? { ...item, enabled } : item)); };
-  const deleteStep = async (id: string) => { await supabase.from('sleep_routine_steps').delete().eq('id', id).eq('user_id', user?.id); setSteps(steps.filter((step) => step.id !== id)); };
+  const toggleStep = async (step: RoutineStep) => {
+    const enabled = !step.enabled;
+    const { error } = await supabase.from('sleep_routine_steps').update({ enabled }).eq('id', step.id).eq('user_id', user?.id);
+    if (error) setNotice(`That bedtime step could not be updated: ${error.message}`);
+    else setSteps(steps.map((item) => item.id === step.id ? { ...item, enabled } : item));
+  };
+  const deleteStep = async (id: string) => {
+    const { error } = await supabase.from('sleep_routine_steps').delete().eq('id', id).eq('user_id', user?.id);
+    if (error) setNotice(`That bedtime step could not be deleted: ${error.message}`);
+    else setSteps(steps.filter((step) => step.id !== id));
+  };
   const useStarterSteps = async () => { for (const [position, title] of starterSteps.entries()) { if (user) await supabase.from('sleep_routine_steps').insert({ user_id: user.id, title, position }); } if (user) { const { data } = await supabase.from('sleep_routine_steps').select('id, title, position, enabled').eq('user_id', user.id).order('position'); setSteps((data || []) as RoutineStep[]); } };
 
   if (loading) return <Spinner label="Preparing your sleep companion..." className="py-20" />;
